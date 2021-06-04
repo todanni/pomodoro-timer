@@ -1,28 +1,43 @@
-import {createSlice} from '@reduxjs/toolkit';
+import {createSelector, createSlice} from '@reduxjs/toolkit';
 
 const initialState = {
     tasks: [
-        {id: 0, title: 'Placeholder non-completed task', done: false},
-        {id: 1, title: 'Placeholder completed task', done: true}
+        { title: 'Placeholder non-completed task', done: false},
+        { title: 'Placeholder completed task', done: true}
     ],
 };
 
 export const taskSlice = createSlice({
     name: 'tasks',
     initialState,
-
     reducers: {
-        complete: state => {
+        addTask: (state, action) => {
+            state.tasks.push(action.payload);
         },
-        add: state => {
+        updateTaskStatus: (state, action) => {
+            state.tasks[action.payload].done = !state.tasks[action.payload].done;
+        }
 
-        },
     },
 })
 
-export const {complete, add} = taskSlice.actions;
+export const {addTask, updateTaskStatus} = taskSlice.actions;
 
 // Selectors
-export const selectTasks = (state) => state.tasks;
+export const selectTasks = state => state.tasks.tasks;
+
+// Selector for all non-completed tasks
+export const selectNonCompletedTasks = createSelector(
+    [selectTasks], tasks => {
+        return tasks.filter(task => task.done === false);
+    }
+);
+
+// Selector for all completed tasks
+export const selectCompletedTasks = createSelector(
+    [selectTasks], tasks => {
+        return tasks.filter(task => task.done === true);
+    }
+);
 
 export default taskSlice.reducer;
