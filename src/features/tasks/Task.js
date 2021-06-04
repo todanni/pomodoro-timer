@@ -2,7 +2,8 @@ import {Box, Checkbox, IconButton, InputBase} from "@material-ui/core";
 import DragIndicatorIcon from "@material-ui/icons/DragIndicator";
 import useStyles from './styles';
 import {useDispatch, useSelector} from "react-redux";
-import {addTask, selectTasks, updateTaskStatus} from "./taskSlice";
+import {addTask, selectTasks, setTasks, updateTaskStatus} from "./taskSlice";
+import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 
 
 export default function TasksBoard(props) {
@@ -11,12 +12,70 @@ export default function TasksBoard(props) {
     const tasks = useSelector(selectTasks);
 
     const handleOnCreate = (e) => {
-        // If Enter is pressed and the task isn't empty
-        if(e.charCode === 13 && e.target.value !== "" ) {
+        if(e.charCode === 13) {
             dispatch(addTask({title: e.target.value, done: false}))
             e.target.value = "";
         }
     }
+
+    const reorder = (list, startIndex, endIndex) => {
+        const result = Array.from(list);
+        const [removed] = result.splice(startIndex, 1);
+        result.splice(endIndex, 0, removed);
+
+        return result;
+    };
+
+    const onDragEnd = (result) => {
+        // dropped outside the list
+        if (!result.destination) {
+            return;
+        }
+
+        const items = reorder(
+            tasks,
+            result.source.index,
+            result.destination.index
+        );
+
+        dispatch(setTasks(items));
+    }
+
+    return (
+        <div>
+            <CreateTask handleOnCreate={handleOnCreate}/>
+            <DragDropContext onDragEnd={onDragEnd} className={classes.task}>
+                <Droppable droppableId="droppable">
+                    {(provided, snapshot) => (
+                        <div
+                            {...provided.droppableProps}
+                            ref={provided.innerRef}
+                        >
+                            {tasks.map((task, index) => (
+                                <Draggable key={"some_random_key" +index} draggableId={"some_random_key" +index} index={index}>
+                                    {(provided, snapshot) => (
+                                        <div
+                                            ref={provided.innerRef}
+                                            {...provided.draggableProps}
+                                            {...provided.dragHandleProps}
+                                        >
+                                            <Task task={task} index={index}/>
+                                        </div>
+                                    )}
+                                </Draggable>
+                            ))}
+                            {provided.placeholder}
+                        </div>
+                    )}
+                </Droppable>
+            </DragDropContext>
+        </div>
+
+    );
+}
+
+function CreateTask(props) {
+    const classes = useStyles();
 
     return (
         <Box className={classes.tasksRoot}>
@@ -28,15 +87,15 @@ export default function TasksBoard(props) {
                 <InputBase
                     className={classes.input}
                     placeholder="Create new task..."
-                    onKeyPress={handleOnCreate}
+                    onKeyPress={props.handleOnCreate}
                     inputProps={{style: {fontSize: 14}}}
                 />
             </Box>
-            {tasks.map((task, index) =>
-                (<Task key={index} task={task} index={index} loading={false}/>))}
         </Box>
     );
 }
+
+
 
 function Task(props) {
     const classes = useStyles();
@@ -65,3 +124,12 @@ function TaskTitle(props) {
         />
     );
 }
+
+
+// const handleOnCreate = (e) => {
+//     // If Enter is pressed and the task isn't empty
+//     if(e.charCode === 13 && e.target.value !== "" ) {
+//         dispatch(addTask({title: e.target.value, done: false}))
+//         e.target.value = "";
+//     }
+// }

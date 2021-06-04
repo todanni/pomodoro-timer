@@ -16,12 +16,14 @@ export const taskSlice = createSlice({
         },
         updateTaskStatus: (state, action) => {
             state.tasks[action.payload].done = !state.tasks[action.payload].done;
-        }
-
+        },
+        setTasks: (state, action) => {
+          state.tasks = action.payload;
+        },
     },
 })
 
-export const {addTask, updateTaskStatus} = taskSlice.actions;
+export const {addTask, updateTaskStatus, setTasks} = taskSlice.actions;
 
 // Selectors
 export const selectTasks = state => state.tasks.tasks;

@@ -15,11 +15,14 @@ export default function Timer(props) {
         if (remainingTime === 0) {
             return <div className={classes.text}>End of session!</div>;
         }
+
+        const time = new Date(remainingTime * 1000).toISOString().substr(11, 8)
+
         return (
             <div className={classes.timer}>
                 <div className={classes.text}>Remaining</div>
-                <div className={classes.value}>{remainingTime}</div>
-                <div className={classes.text}>seconds</div>
+                <div className={classes.value}>{time}</div>
+                <div className={classes.text}>Session</div>
             </div>
         );
     };
@@ -35,8 +38,8 @@ export default function Timer(props) {
                 isPlaying={isRunning}
                 key={key}
                 size={350}
-                duration={duration}
-                initialRemainingTime={duration}
+                duration={duration*60}
+                initialRemainingTime={duration*60}
                 colors={[["#004777", 1]]}
                 onComplete={() => onCompleteHandler()}
             >
