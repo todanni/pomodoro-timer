@@ -11,6 +11,8 @@ const initialState = {
         {numberOfSessions: 4, breakDuration: 10, workDuration: 50},
     ],
     sessions: [ {breakDuration: 10, workDuration: 50} ],
+    breakTime: false,
+    finalSession: false,
 };
 
 export const timerSlice = createSlice({
@@ -40,7 +42,12 @@ export const timerSlice = createSlice({
             state.sessions = action.payload;
         },
         finishSession: state => {
-            state.currentSession += 1;
+            if(state.breakTime){
+                state.currentSession += 1;
+            }
+            else {
+                state.breakTime = !state.breakTime
+            }
         }
     },
 })
@@ -54,6 +61,15 @@ export const selectReset = (state) => state.timer.reset;
 
 export const selectShowSettings = (state) => state.timer.showSettings;
 
-export const selectDuration = (state) => state.timer.sessions[state.timer.currentSession].workDuration;
+export const selectDuration = (state) => {
+    if (state.breakTime) {
+        return state.timer.sessions[state.timer.currentSession].breakDuration;
+    }
+    return state.timer.sessions[state.timer.currentSession].workDuration;
+};
+
+export const selectIsBreakTime = (state) => state.timer.breakTime;
+
+export const selectIsFinalSession = (state) => state.timer.sessions.length === state.timer.currentSession + 1;
 
 export default timerSlice.reducer;

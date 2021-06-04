@@ -2,7 +2,14 @@ import React from 'react';
 import {CountdownCircleTimer} from "react-countdown-circle-timer";
 import {useDispatch, useSelector} from 'react-redux';
 import useStyles from './styles';
-import {finishSession, selectDuration, selectIsRunning, selectReset} from "./timerSlice";
+import {
+    finishSession,
+    selectDuration,
+    selectIsBreakTime,
+    selectIsFinalSession,
+    selectIsRunning,
+    selectReset
+} from "./timerSlice";
 
 export default function Timer(props) {
     const classes = useStyles();
@@ -10,6 +17,8 @@ export default function Timer(props) {
     const isRunning = useSelector(selectIsRunning);
     const key = useSelector(selectReset);
     const duration = useSelector(selectDuration);
+    const breakTime = useSelector(selectIsBreakTime);
+    const finalSession = useSelector(selectIsFinalSession);
 
     const renderTime = ({ remainingTime }) => {
         if (remainingTime === 0) {
@@ -28,8 +37,10 @@ export default function Timer(props) {
     };
 
     const onCompleteHandler = () => {
-        dispatch(finishSession());
-        return [true, 10000];
+        if (!finalSession) {
+            dispatch(finishSession());
+        }
+        return [!(finalSession && breakTime), 0]
     }
 
     return(
@@ -38,9 +49,9 @@ export default function Timer(props) {
                 isPlaying={isRunning}
                 key={key}
                 size={350}
-                duration={duration*60}
-                initialRemainingTime={duration*60}
-                colors={[["#004777", 1]]}
+                duration={duration}
+                initialRemainingTime={duration}
+                colors={ breakTime ? breakColours : workColours }
                 onComplete={() => onCompleteHandler()}
             >
                 {renderTime}
@@ -48,3 +59,14 @@ export default function Timer(props) {
         </div>
     );
 }
+
+const workColours = [
+    ['#004777', 0.33],
+    ['#F7B801', 0.33],
+    ['#A30000', 0.33],
+];
+
+const breakColours = [
+    ["#00FF00", 0.5],
+    ["#FFFF00", 0.5],
+];
